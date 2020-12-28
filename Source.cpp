@@ -48,6 +48,7 @@ struct user {
 	string username, hashed_password;
 	double balance;
 };
+
 void main_menu() {
 	cout << "Choose one of the following options: " << endl;
 	cout << "L - login" << endl;
@@ -64,27 +65,65 @@ void second_menu(double X){
 	cout << "W - withdraw";
 	return;
 }
-void printRegister() {
-	cout << "Username must be ";
+bool validation_for_username(string temp, vector <user>& temp_users) {
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= 48 && temp[i] <= 57) {
+			return 0;
+		}
+	}
+	for (int i = 0; i < temp_users.size(); i++) {
+		if (temp == temp_users[i].username) {
+			return 0;
+		}
+	}
+	return 1;
+}
+bool validation_for_password(string temp) {
+	bool special_char = false;
+	bool lower_latter = false;
+	bool upper_latter = false;
+	if (temp.size() < 5) {
+		return 0;
+	}
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] == '!' || temp[i] == '@' || temp[i] == '#' || temp[i] == '$' || temp[i] == '%' || temp[i] == '^' || temp[i] == '&' || temp[i] == '*') {
+			special_char = true;
+			break;
+		}
+	}
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= 97 && temp[i] <= 122) {
+			lower_latter = true;
+		}
+	}
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= 65 && temp[i] <= 90) {
+			upper_latter = true;
+		}
+	}
+	if (special_char == true && lower_latter == true && upper_latter == true) {
+		return 1;
+	}
+	return 0;
 }
 
 int main() {
-	
 	vector<string> inputs;
 	string buffer, fn, student;
 
-	fstream myFile;
+	fstream myFile1;
 
-	myFile.open("users.txt", std::fstream::in);
+	myFile1.open("users.txt", std::fstream::in);
 
-	if (myFile.is_open() == false) {
+	if (myFile1.is_open() == false) {
 		cout << "File not open";
 		return 1;
 	}
 
-	while (getline(myFile, buffer)) {
+	while (getline(myFile1, buffer)) {
 		inputs.push_back(buffer);
 	}
+
 	vector<user> users(inputs.size());
 	for (int i = 0; i < inputs.size(); i++) {
 		users[i].username = find_username(inputs[i]);
@@ -92,52 +131,88 @@ int main() {
 		users[i].balance = find_balance(inputs[i]);
 	}
 
+	myFile1.close();
+
 	char letter;
-	bool isLogin = true;
+	bool isRegister = true;
+	bool isLogin = false;
+	int user_number = -1;
 	main_menu();
 	cin >> letter;
+	string username;
+	string password;
 
 	if (letter == 'L') {
-		string username;
-		string password;
 		cout << "Please, insert username: "<< endl;
 		cin >> username;
 		cout << "Please, insert password:" << endl;
 		cin >> password;
 		for (int i = 0; i < users.size(); i++) {
 			if (username == users[i].username && password != users[i].hashed_password) {
-				cout << "Incorrect password. Try again.";
-				cin >> password;
+				while (password != users[i].hashed_password) {
+					cout << "Incorrect password. Try again." << endl;
+					cin >> password;
+				}
 				if (password == users[i].hashed_password) {
-					second_menu(users[i].balance);
+					//second_menu(users[i].balance);
+					isLogin = true;
+					user_number = i;
 					break;
 				}
 			}
 			if (username != users[i].username && password == users[i].hashed_password) {
-				cout << "Incorrect username. Try again.";
-				cin >> username;
+				while (username != users[i].username) {
+					cout << "Incorrect username. Try again." << endl;
+					cin >> username;
+				}
 				if (username == users[i].username) {
-					second_menu(users[i].balance);
+					//second_menu(users[i].balance);
+					isLogin = true;
+					user_number = i;
 					break;
 				}
 			}
 			if (username == users[i].username && password == users[i].hashed_password) {
-				second_menu(users[i].balance);
+				//second_menu(users[i].balance);
+				isLogin = true;
+				user_number = i;
 				break;
 			}
-			isLogin = false;
+			isRegister = false;
 		}
 	}
 
-	if (isLogin == false || letter == 'R') {
+	if (isRegister == false) {
+		cout << "You don't have registration. Press 'R' to create." << endl;
+		cin >> letter;
+	}
 
+	if (letter == 'R') {
+		cout << "Please, insert username which contains only latin letters or symbols." << endl;
+		cin >> username;
+		while (validation_for_username(username, users) == false) {
+			cout << "This username is already exist or is incorrect. Please, try another." << endl;
+			cin >> username;
+			validation_for_username(username, users);
+		}
+		cout << "Please, insert password. The password must be at least 5 characters in length and must contain:" << endl;
+		cout << "a minimum of 1 lower case letter [a-z]" << endl;
+		cout << "a minimum of 1 upper case letter [A-Z]" << endl;
+		cout << "a minimum of 1 special character: !@#$%^&*" << endl;
+		cin >> password;
+		while (validation_for_password(password) == false) {
+			cout << "The password is not valid. Please retype the password." << endl;
+			cin >> password;
+			validation_for_password(password);
+		}
+		user new_user = {username,password,0.0};
+		users.push_back(new_user);
+		isLogin = true;
+		user_number = users.size();
 	}
 	
-
-	
-	
-
-	
-
+	if (isLogin) {
+		second_menu(users[user_number-1].balance);
+	}
 	return 0;
 }
