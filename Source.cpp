@@ -49,14 +49,14 @@ struct user {
 	double balance;
 };
 
-void main_menu() {
+void print_main_menu() {
 	cout << "Choose one of the following options: " << endl;
 	cout << "L - login" << endl;
 	cout << "R - Register" << endl;
 	cout << "Q - Quit" << endl;
 	return;
 }
-void second_menu(double X){
+void print_second_menu(double X){
 	cout << "You have " << X << " BGN. Choose one of the following options:" << endl;
 	cout << "C - cancel account" << endl;
 	cout << "D - deposit" << endl;
@@ -107,43 +107,14 @@ bool validation_for_password(string temp) {
 	return 0;
 }
 
-int main() {
-	vector<string> inputs;
-	string buffer, fn, student;
-
-	fstream myFile1;
-
-	myFile1.open("users.txt", std::fstream::in);
-
-	if (myFile1.is_open() == false) {
-		cout << "File not open";
-		return 1;
-	}
-
-	while (getline(myFile1, buffer)) {
-		inputs.push_back(buffer);
-	}
-
-	vector<user> users(inputs.size());
-	for (int i = 0; i < inputs.size(); i++) {
-		users[i].username = find_username(inputs[i]);
-		users[i].hashed_password = find_password(inputs[i]);
-		users[i].balance = find_balance(inputs[i]);
-	}
-
-	myFile1.close();
-
-	char letter;
-	bool isRegister = true;
+int main_menu(vector<user>& users, char letter) {
 	bool isLogin = false;
 	int user_number = -1;
-	main_menu();
-	cin >> letter;
 	string username;
 	string password;
 
 	if (letter == 'L') {
-		cout << "Please, insert username: "<< endl;
+		cout << "Please, insert username: " << endl;
 		cin >> username;
 		cout << "Please, insert password:" << endl;
 		cin >> password;
@@ -178,11 +149,10 @@ int main() {
 				user_number = i;
 				break;
 			}
-			isRegister = false;
 		}
 	}
 
-	if (isRegister == false) {
+	if (isLogin == false && letter == 'L' ) {
 		cout << "You don't have registration. Press 'R' to create." << endl;
 		cin >> letter;
 	}
@@ -191,7 +161,7 @@ int main() {
 		cout << "Please, insert username which contains only latin letters or symbols." << endl;
 		cin >> username;
 		while (validation_for_username(username, users) == false) {
-			cout << "This username is already exist or is incorrect. Please, try another." << endl;
+			cout << "The username already exists or is incorrect. Please, try another." << endl;
 			cin >> username;
 			validation_for_username(username, users);
 		}
@@ -205,14 +175,93 @@ int main() {
 			cin >> password;
 			validation_for_password(password);
 		}
-		user new_user = {username,password,0.0};
+		string password1;
+		cout << "Please, confirm your password." << endl;
+		cin >> password1;
+		while (password1 != password) {
+			cout << "Your password and confirmation password don't match. Try again." << endl;
+			cin >> password1;
+		}
+		user new_user = {username, password, 0 };
 		users.push_back(new_user);
 		isLogin = true;
-		user_number = users.size();
+		user_number = users.size()-1;
+	}
+
+	if (letter == 'Q') {
+		remove("users.txt");
+		fstream myFile2;
+		myFile2.open("users.txt", fstream::out | fstream::app);
+		for (int i = 0; i < users.size(); i++) {
+			myFile2 << users[i].username << ":" << users[i].hashed_password << ":" << users[i].balance << endl;
+		}
+		myFile2.close();
+		return -1;
+	}
+
+	return user_number;
+}
+
+int main() {
+	vector<string> inputs;
+	string buffer;
+
+	fstream myFile1;
+	myFile1.open("users.txt", std::fstream::in);
+
+	if (myFile1.is_open() == false) {
+		cout << "File is not open.";
+		return 1;
+	}
+	while (getline(myFile1, buffer)) {
+		inputs.push_back(buffer);
+	}
+
+	vector<user> users(inputs.size());
+	for (int i = 0; i < inputs.size(); i++) {
+		users[i].username = find_username(inputs[i]);
+		users[i].hashed_password = find_password(inputs[i]);
+		users[i].balance = find_balance(inputs[i]);
+	}
+	myFile1.close();
+	
+	char letter;
+	print_main_menu();
+	cin >> letter;
+
+	int user_number = main_menu(users, letter);
+
+	if (user_number >= 0) {
+		print_second_menu(users[user_number].balance);
+	}
+	else {
+		return 0;
+	}
+	cin >> letter;
+	string password;
+
+	if (letter == 'C' && users[user_number].balance == 0) {
+		cout << "Please enter your password to confirm." << endl;
+		cin >> password;
+		while (password != users[user_number].hashed_password) {
+			cout << "The password is incorrect. Try again." << endl;
+			cin >> password;
+		}
+		remove("users.txt");
+		fstream myFile2;
+		myFile2.open("users.txt", fstream::out | fstream::app);
+		for (int i = 0; i < users.size(); i++) {
+			if (i != user_number) {
+				myFile2 << users[i].username << ":" << users[i].hashed_password << ":" << users[i].balance << endl;
+			}
+		}
+		myFile2.close();
 	}
 	
-	if (isLogin) {
-		second_menu(users[user_number-1].balance);
+	cout << endl;
+	for (int i = 0; i < users.size(); i++) {
+		cout << users[i].username << ":" << users[i].hashed_password << ":" << users[i].balance << endl;
 	}
+	
 	return 0;
 }
