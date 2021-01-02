@@ -51,20 +51,25 @@ struct user {
 
 void print_main_menu() {
 	cout << "Choose one of the following options: " << endl;
-	cout << "L - login" << endl;
+	cout << "L - Login" << endl;
 	cout << "R - Register" << endl;
 	cout << "Q - Quit" << endl;
+	cout << "Your choice is: ";
 	return;
 }
+
 void print_second_menu(double X){
+	cout << endl;
 	cout << "You have " << X << " BGN. Choose one of the following options:" << endl;
 	cout << "C - cancel account" << endl;
 	cout << "D - deposit" << endl;
 	cout << "L - logout" << endl;
 	cout << "T - transfer" << endl;
-	cout << "W - withdraw";
+	cout << "W - withdraw" << endl;
+	cout << "Your choice is: ";
 	return;
 }
+
 bool validation_for_username(string temp, vector <user>& temp_users) {
 	for (int i = 0; i < temp.size(); i++) {
 		if (temp[i] >= 48 && temp[i] <= 57) {
@@ -78,6 +83,7 @@ bool validation_for_username(string temp, vector <user>& temp_users) {
 	}
 	return 1;
 }
+
 bool validation_for_password(string temp) {
 	bool special_char = false;
 	bool lower_latter = false;
@@ -107,7 +113,13 @@ bool validation_for_password(string temp) {
 	return 0;
 }
 
+double my_round(double temp) {
+	double result = (int)(temp * 100 + 0.5);
+	return (double)result/ 100;
+}
+
 int main_menu(vector<user>& users, char letter) {
+	hash<string> my_hash;
 	bool isLogin = false;
 	int user_number = -1;
 	string username;
@@ -118,14 +130,15 @@ int main_menu(vector<user>& users, char letter) {
 		cin >> username;
 		cout << "Please, insert password:" << endl;
 		cin >> password;
+		password = my_hash(password);
 		for (int i = 0; i < users.size(); i++) {
 			if (username == users[i].username && password != users[i].hashed_password) {
 				while (password != users[i].hashed_password) {
 					cout << "Incorrect password. Try again." << endl;
 					cin >> password;
+					password = my_hash(password);
 				}
 				if (password == users[i].hashed_password) {
-					//second_menu(users[i].balance);
 					isLogin = true;
 					user_number = i;
 					break;
@@ -137,14 +150,12 @@ int main_menu(vector<user>& users, char letter) {
 					cin >> username;
 				}
 				if (username == users[i].username) {
-					//second_menu(users[i].balance);
 					isLogin = true;
 					user_number = i;
 					break;
 				}
 			}
 			if (username == users[i].username && password == users[i].hashed_password) {
-				//second_menu(users[i].balance);
 				isLogin = true;
 				user_number = i;
 				break;
@@ -182,7 +193,8 @@ int main_menu(vector<user>& users, char letter) {
 			cout << "Your password and confirmation password don't match. Try again." << endl;
 			cin >> password1;
 		}
-		user new_user = {username, password, 0 };
+		password = my_hash(password);
+		user new_user = { username, password, 0 };
 		users.push_back(new_user);
 		isLogin = true;
 		user_number = users.size()-1;
@@ -198,8 +210,135 @@ int main_menu(vector<user>& users, char letter) {
 		myFile2.close();
 		return -1;
 	}
-
 	return user_number;
+}
+
+char second_menu(vector<user>& users, char letter, int user_number) {
+	hash<string> my_hash;
+	if (letter == 'C') {
+		cout << "Your balance must be 0 to cancel account." << endl;
+		return 'c';
+	}
+	if (letter == 'C' && users[user_number].balance == 0) {
+		string password;
+		cout << "Please enter your password to confirm." << endl;
+		cin >> password;
+		password = my_hash(password); 
+		while (password != users[user_number].hashed_password) {
+			cout << "The password is incorrect. Try again." << endl;
+			cin >> password;
+			password = my_hash(password);
+		}
+		remove("users.txt");
+		fstream myFile2;
+		myFile2.open("users.txt", fstream::out | fstream::app);
+		for (int i = 0; i < users.size(); i++) {
+			if (i != user_number) {
+				myFile2 << users[i].username << ":" << users[i].hashed_password << ":" << users[i].balance << endl;
+			}
+		}
+		myFile2.close();
+		users.clear();
+
+		fstream myFile1;
+		myFile1.open("users.txt", std::fstream::in);
+		string buffer;
+		vector<string> inputs;
+		while (getline(myFile1, buffer)) {
+			inputs.push_back(buffer);
+		}
+
+		for (int i = 0; i < inputs.size(); i++) {
+			users[i].username = find_username(inputs[i]);
+			users[i].hashed_password = find_password(inputs[i]);
+			users[i].balance = find_balance(inputs[i]);
+		}
+		return 'C';
+	}
+
+	if (letter == 'L') {
+		return 'L';
+	}
+
+	if (letter == 'D') {
+		double deposit;
+		cout << "Please, insert deposit: ";
+		cin >> deposit;
+		users[user_number].balance += my_round(deposit);
+		return 'D';
+	}
+
+	if (letter == 'T') {
+		string user_to_transfer;
+		cout << "Please, insert username of the person you choose to transfer money: ";
+		cin >> user_to_transfer;
+		cout << endl;
+		for (int i = 0; i < users.size(); i++) {
+			if (users[i].username == user_to_transfer) {
+				double transfer_money;
+				const double overdraft = 10000;
+				cout << "Your overdraft limit is " << overdraft << " BGN." << endl;
+				cout << "Please, insert how much money you want to transfer: ";
+				cin >> transfer_money;
+				transfer_money = my_round(transfer_money);
+				if (users[user_number].balance - transfer_money > -overdraft) {
+					users[user_number].balance -= transfer_money;
+					users[i].balance += transfer_money;
+					return 'T';
+				}
+				cout << "You reach your overdraft limit. Try again." << endl;
+				return 'T';
+			}
+		}
+		cout << "There is no user with that username. You can't transfer money." << endl;
+		return 'T';
+	}
+	if (letter == 'W') {
+		double with_money;
+		const double overdraft = 10000;
+		cout << "Please, insert how much money you want to withdraw: ";
+		cin >> with_money;
+		with_money = my_round(with_money);
+		if (users[user_number].balance - with_money > -overdraft) {
+			users[user_number].balance -= with_money;
+			return 'W';
+		}
+		cout << "You reach your overdraft limit. Try again." << endl;
+		return 'W';
+	}
+}
+
+char second_function(vector<user>& users, int user_number, char second_letter) {
+	if (second_letter == 'L') {
+		return 'L';
+	}
+	if (second_letter == 'C') {
+		return 'C';
+	}
+	cout << endl;
+	print_second_menu(users[user_number].balance);
+	cin >> second_letter;
+	second_menu(users, second_letter, user_number);
+	return second_function(users, user_number, second_letter);
+}
+
+char main_function(vector<user>& users, char main_letter) {
+	int user_number = main_menu(users, main_letter);
+	if (user_number < 0) {
+		return 'Q';
+	}
+	char second_letter;
+	cout << endl;
+	print_second_menu(users[user_number].balance);
+	cin >> second_letter;
+	second_menu(users, second_letter, user_number);
+	second_letter = second_function(users, user_number, second_letter);
+	if (second_letter == 'L' || second_letter == 'C') {
+		cout << endl;
+		print_main_menu();
+		cin >> main_letter;
+		return main_function(users, main_letter);
+	}
 }
 
 int main() {
@@ -213,6 +352,7 @@ int main() {
 		cout << "File is not open.";
 		return 1;
 	}
+
 	while (getline(myFile1, buffer)) {
 		inputs.push_back(buffer);
 	}
@@ -225,43 +365,10 @@ int main() {
 	}
 	myFile1.close();
 	
-	char letter;
+	char main_letter;
 	print_main_menu();
-	cin >> letter;
-
-	int user_number = main_menu(users, letter);
-
-	if (user_number >= 0) {
-		print_second_menu(users[user_number].balance);
-	}
-	else {
+	cin >> main_letter;
+	if (main_function(users, main_letter) == 'Q') {
 		return 0;
 	}
-	cin >> letter;
-	string password;
-
-	if (letter == 'C' && users[user_number].balance == 0) {
-		cout << "Please enter your password to confirm." << endl;
-		cin >> password;
-		while (password != users[user_number].hashed_password) {
-			cout << "The password is incorrect. Try again." << endl;
-			cin >> password;
-		}
-		remove("users.txt");
-		fstream myFile2;
-		myFile2.open("users.txt", fstream::out | fstream::app);
-		for (int i = 0; i < users.size(); i++) {
-			if (i != user_number) {
-				myFile2 << users[i].username << ":" << users[i].hashed_password << ":" << users[i].balance << endl;
-			}
-		}
-		myFile2.close();
-	}
-	
-	cout << endl;
-	for (int i = 0; i < users.size(); i++) {
-		cout << users[i].username << ":" << users[i].hashed_password << ":" << users[i].balance << endl;
-	}
-	
-	return 0;
 }
