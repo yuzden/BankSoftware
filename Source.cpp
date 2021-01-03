@@ -4,7 +4,13 @@
 #include <vector>
 
 using namespace std;
-string find_username(string temp) {
+
+struct user {
+	string username, hashed_password;
+	double balance;
+};
+
+string find_username(const string & temp) {
 	string new_string;
 	for (int i = 0; i < temp.size(); i++) {
 		if (temp[i] == ':') {
@@ -14,11 +20,11 @@ string find_username(string temp) {
 	}
 }
 
-string find_password(string temp) {
+string find_password(const string & temp) {
 	string new_string;
 	for (int i = 0; i < temp.size(); i++) {
 		if (temp[i] == ':') {
-			for (int j = i+1; j < temp.size(); j++) {
+			for (int j = i + 1; j < temp.size(); j++) {
 				if (temp[j] == ':') {
 					return new_string;
 				}
@@ -28,7 +34,7 @@ string find_password(string temp) {
 	}
 }
 
-double find_balance(string temp) {
+double find_balance(const string & temp) {
 	string new_string;
 	for (int i = 0; i < temp.size(); i++) {
 		if (temp[i] == ':') {
@@ -44,13 +50,97 @@ double find_balance(string temp) {
 	return stod(new_string);
 }
 
-struct user {
-	string username, hashed_password;
-	double balance;
-};
+bool validation_for_username(const string & temp, const vector <user> & temp_users) {
+	for (int i = 0; i < temp_users.size(); i++) {
+		if (temp == temp_users[i].username) {
+			return 0;
+		}
+	}
+
+	int count = 0;
+	for (int i = 0; i < temp.size(); i++) {
+		if (isdigit(temp[i])) {
+			count++;
+		}
+	}
+
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] == '!' || temp[i] == '@' || temp[i] == '#' || temp[i] == '$' || temp[i] == '%' || temp[i] == '^' || temp[i] == '&' || temp[i] == '*') {
+			count++;
+		}
+	}
+
+	const int min_lower_letter = 97;
+	const int max_lower_letter = 122;
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= min_lower_letter && temp[i] <= max_lower_letter) {
+			count++;
+		}
+	}
+
+	const int min_upper_letter = 65;
+	const int max_upper_letter = 90;
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= min_upper_letter && temp[i] <= max_upper_letter) {
+			count++;
+		}
+	}
+
+	if (count == temp.size()) {
+		return 1;
+	}
+	return 0;
+}
+
+bool validation_for_password(const string & temp) {
+	bool special_char = false;
+	bool lower_letter = false;
+	bool upper_letter = false;
+	const int max_size = 5;
+	if (temp.size() < max_size) {
+		return 0;
+	}
+
+	int count = 0;
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] == '!' || temp[i] == '@' || temp[i] == '#' || temp[i] == '$' || temp[i] == '%' || temp[i] == '^' || temp[i] == '&' || temp[i] == '*') {
+			special_char = true;
+			count++;
+		}
+	}
+
+	const int min_lower_letter = 97;
+	const int max_lower_letter = 122;
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= min_lower_letter && temp[i] <= max_lower_letter) {
+			lower_letter = true;
+			count++;
+		}
+	}
+
+	const int min_upper_letter = 65;
+	const int max_upper_letter = 90;
+	for (int i = 0; i < temp.size(); i++) {
+		if (temp[i] >= min_upper_letter && temp[i] <= max_upper_letter) {
+			upper_letter = true;
+			count++;
+		}
+	}
+	
+	for (int i = 0; i < temp.size(); i++) {
+		if (isdigit(temp[i])) {
+			count++;
+		}
+	}
+
+	if (special_char == true && lower_letter == true && upper_letter == true && count == temp.size()) {
+		return 1;
+	}
+	return 0;
+}
 
 void print_main_menu() {
-	cout << "Choose one of the following options: " << endl;
+	cout << "Choose one of the following options:" << endl;
 	cout << "L - Login" << endl;
 	cout << "R - Register" << endl;
 	cout << "Q - Quit" << endl;
@@ -58,8 +148,7 @@ void print_main_menu() {
 	return;
 }
 
-void print_second_menu(double X){
-	cout << endl;
+void print_second_menu(double X) {
 	cout << "You have " << X << " BGN. Choose one of the following options:" << endl;
 	cout << "C - cancel account" << endl;
 	cout << "D - deposit" << endl;
@@ -70,55 +159,12 @@ void print_second_menu(double X){
 	return;
 }
 
-bool validation_for_username(string temp, vector <user>& temp_users) {
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= 48 && temp[i] <= 57) {
-			return 0;
-		}
-	}
-	for (int i = 0; i < temp_users.size(); i++) {
-		if (temp == temp_users[i].username) {
-			return 0;
-		}
-	}
-	return 1;
+double my_round(const double temp) {
+	double result = (int) (temp * 100 + 0.5);
+	return (double) result / 100;
 }
 
-bool validation_for_password(string temp) {
-	bool special_char = false;
-	bool lower_latter = false;
-	bool upper_latter = false;
-	if (temp.size() < 5) {
-		return 0;
-	}
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] == '!' || temp[i] == '@' || temp[i] == '#' || temp[i] == '$' || temp[i] == '%' || temp[i] == '^' || temp[i] == '&' || temp[i] == '*') {
-			special_char = true;
-			break;
-		}
-	}
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= 97 && temp[i] <= 122) {
-			lower_latter = true;
-		}
-	}
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= 65 && temp[i] <= 90) {
-			upper_latter = true;
-		}
-	}
-	if (special_char == true && lower_latter == true && upper_latter == true) {
-		return 1;
-	}
-	return 0;
-}
-
-double my_round(double temp) {
-	double result = (int)(temp * 100 + 0.5);
-	return (double)result/ 100;
-}
-
-int main_menu(vector<user>& users, char letter) {
+int main_menu(vector<user> & users, char letter) {
 	hash<string> my_hash;
 	bool isLogin = false;
 	int user_number = -1;
@@ -126,9 +172,9 @@ int main_menu(vector<user>& users, char letter) {
 	string password;
 
 	if (letter == 'L') {
-		cout << "Please, insert username: " << endl;
+		cout << "Please, insert username: ";
 		cin >> username;
-		cout << "Please, insert password:" << endl;
+		cout << "Please, insert password: ";
 		cin >> password;
 		password = my_hash(password);
 		for (int i = 0; i < users.size(); i++) {
@@ -194,7 +240,8 @@ int main_menu(vector<user>& users, char letter) {
 			cin >> password1;
 		}
 		password = my_hash(password);
-		user new_user = { username, password, 0 };
+
+		user new_user = {username, password, 0};
 		users.push_back(new_user);
 		isLogin = true;
 		user_number = users.size()-1;
@@ -213,7 +260,7 @@ int main_menu(vector<user>& users, char letter) {
 	return user_number;
 }
 
-char second_menu(vector<user>& users, char letter, int user_number) {
+char second_menu(vector<user> & users, char letter, const int user_number) {
 	hash<string> my_hash;
 	if (letter == 'C') {
 		cout << "Your balance must be 0 to cancel account." << endl;
@@ -221,14 +268,16 @@ char second_menu(vector<user>& users, char letter, int user_number) {
 	}
 	if (letter == 'C' && users[user_number].balance == 0) {
 		string password;
-		cout << "Please enter your password to confirm." << endl;
+		cout << "Please enter your password to confirm: ";
 		cin >> password;
 		password = my_hash(password); 
+
 		while (password != users[user_number].hashed_password) {
 			cout << "The password is incorrect. Try again." << endl;
 			cin >> password;
 			password = my_hash(password);
 		}
+
 		remove("users.txt");
 		fstream myFile2;
 		myFile2.open("users.txt", fstream::out | fstream::app);
@@ -238,12 +287,14 @@ char second_menu(vector<user>& users, char letter, int user_number) {
 			}
 		}
 		myFile2.close();
+
 		users.clear();
 
 		fstream myFile1;
-		myFile1.open("users.txt", std::fstream::in);
+		myFile1.open("users.txt", fstream::in);
 		string buffer;
 		vector<string> inputs;
+
 		while (getline(myFile1, buffer)) {
 			inputs.push_back(buffer);
 		}
@@ -265,6 +316,7 @@ char second_menu(vector<user>& users, char letter, int user_number) {
 		cout << "Please, insert deposit: ";
 		cin >> deposit;
 		users[user_number].balance += my_round(deposit);
+		cout << "You successfully deposit your money." << endl;
 		return 'D';
 	}
 
@@ -281,9 +333,10 @@ char second_menu(vector<user>& users, char letter, int user_number) {
 				cout << "Please, insert how much money you want to transfer: ";
 				cin >> transfer_money;
 				transfer_money = my_round(transfer_money);
-				if (users[user_number].balance - transfer_money > -overdraft) {
+				if (users[user_number].balance - transfer_money >= -overdraft) {
 					users[user_number].balance -= transfer_money;
 					users[i].balance += transfer_money;
+					cout << "You successfully transfer " << transfer_money << " BGN to " << user_to_transfer << endl;
 					return 'T';
 				}
 				cout << "You reach your overdraft limit. Try again." << endl;
@@ -299,7 +352,7 @@ char second_menu(vector<user>& users, char letter, int user_number) {
 		cout << "Please, insert how much money you want to withdraw: ";
 		cin >> with_money;
 		with_money = my_round(with_money);
-		if (users[user_number].balance - with_money > -overdraft) {
+		if (users[user_number].balance - with_money >= -overdraft) {
 			users[user_number].balance -= with_money;
 			return 'W';
 		}
@@ -308,7 +361,7 @@ char second_menu(vector<user>& users, char letter, int user_number) {
 	}
 }
 
-char second_function(vector<user>& users, int user_number, char second_letter) {
+char second_function(vector<user> & users, int user_number, char second_letter) {
 	if (second_letter == 'L') {
 		return 'L';
 	}
@@ -318,12 +371,15 @@ char second_function(vector<user>& users, int user_number, char second_letter) {
 	cout << endl;
 	print_second_menu(users[user_number].balance);
 	cin >> second_letter;
+
 	second_menu(users, second_letter, user_number);
+
 	return second_function(users, user_number, second_letter);
 }
 
-char main_function(vector<user>& users, char main_letter) {
+char main_function(vector<user> & users, char main_letter) {
 	int user_number = main_menu(users, main_letter);
+
 	if (user_number < 0) {
 		return 'Q';
 	}
@@ -331,8 +387,10 @@ char main_function(vector<user>& users, char main_letter) {
 	cout << endl;
 	print_second_menu(users[user_number].balance);
 	cin >> second_letter;
+
 	second_menu(users, second_letter, user_number);
 	second_letter = second_function(users, user_number, second_letter);
+
 	if (second_letter == 'L' || second_letter == 'C') {
 		cout << endl;
 		print_main_menu();
@@ -346,10 +404,10 @@ int main() {
 	string buffer;
 
 	fstream myFile1;
-	myFile1.open("users.txt", std::fstream::in);
+	myFile1.open("users.txt", fstream::in);
 
 	if (myFile1.is_open() == false) {
-		cout << "File is not open.";
+		cout << "File is not open. Please, try again in a few minutes.";
 		return 1;
 	}
 
@@ -364,10 +422,11 @@ int main() {
 		users[i].balance = find_balance(inputs[i]);
 	}
 	myFile1.close();
-	
+
 	char main_letter;
 	print_main_menu();
 	cin >> main_letter;
+
 	if (main_function(users, main_letter) == 'Q') {
 		return 0;
 	}
