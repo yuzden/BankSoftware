@@ -23,7 +23,7 @@ bool validation_for_password(const string& temp);
 
 void print_main_menu();
 
-void print_second_menu(double X);
+void print_second_menu(const double X);
 
 double my_round(const double temp);
 

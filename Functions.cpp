@@ -144,7 +144,7 @@ void print_main_menu() {
 	return;
 }
 
-void print_second_menu(double X) {
+void print_second_menu(const double X) {
 	cout << "You have " << X << " BGN. Choose one of the following options:" << endl;
 	cout << "C - cancel account" << endl;
 	cout << "D - deposit" << endl;
@@ -345,6 +345,7 @@ char second_menu(vector<user>& users, char letter, const int user_number) {
 		cout << "There is no user with that username. You can't transfer money." << endl;
 		return 'T';
 	}
+
 	if (letter == 'W') {
 		double with_money;
 		const double overdraft = 10000;
@@ -364,9 +365,11 @@ char second_function(vector<user>& users, int user_number, char second_letter) {
 	if (second_letter == 'L') {
 		return 'L';
 	}
+
 	if (second_letter == 'C') {
 		return 'C';
 	}
+
 	cout << endl;
 	print_second_menu(users[user_number].balance);
 	cin >> second_letter;
