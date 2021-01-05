@@ -34,3 +34,5 @@ char second_menu(vector<user>& users, char letter, const int user_number);
 char second_function(vector<user>& users, int user_number, char second_letter);
 
 char main_function(vector<user>& users, char main_letter);
+
+string hash_string(string& password);

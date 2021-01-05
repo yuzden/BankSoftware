@@ -14,8 +14,8 @@ int main() {
 	myFile1.open("users.txt", fstream::in);
 
 	if (myFile1.is_open() == false) {
-		cout << "File is not open. Please, try again in a few minutes.";
-		return 1;
+		ofstream myFile("users.txt");
+		myFile.close();
 	}
 
 	while (getline(myFile1, buffer)) {

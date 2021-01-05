@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -6,162 +6,12 @@
 
 using namespace std;
 
-string find_username(const string& temp) {
-	string new_string;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] == ':') {
-			return new_string;
-		}
-		new_string.push_back(temp[i]);
-	}
-}
-
-string find_password(const string& temp) {
-	string new_string;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] == ':') {
-			for (int j = i + 1; j < temp.size(); j++) {
-				if (temp[j] == ':') {
-					return new_string;
-				}
-				new_string.push_back(temp[j]);
-			}
-		}
-	}
-}
-
-double find_balance(const string& temp) {
-	string new_string;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] == ':') {
-			for (int j = i + 1; j < temp.size(); j++) {
-				if (temp[j] == ':') {
-					for (int k = j + 1; k < temp.size(); k++) {
-						new_string.push_back(temp[k]);
-					}
-				}
-			}
-		}
-	}
-	return stod(new_string);
-}
-
-bool validation_for_username(const string& temp, const vector <user>& temp_users) {
-	for (int i = 0; i < temp_users.size(); i++) {
-		if (temp == temp_users[i].username) {
-			return 0;
-		}
-	}
-
-	int count = 0;
-	for (int i = 0; i < temp.size(); i++) {
-		if (isdigit(temp[i])) {
-			count++;
-		}
-	}
-
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] == '!' || temp[i] == '@' || temp[i] == '#' || temp[i] == '$' || temp[i] == '%' || temp[i] == '^' || temp[i] == '&' || temp[i] == '*') {
-			count++;
-		}
-	}
-
-	const int min_lower_letter = 97;
-	const int max_lower_letter = 122;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= min_lower_letter && temp[i] <= max_lower_letter) {
-			count++;
-		}
-	}
-
-	const int min_upper_letter = 65;
-	const int max_upper_letter = 90;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= min_upper_letter && temp[i] <= max_upper_letter) {
-			count++;
-		}
-	}
-
-	if (count == temp.size()) {
-		return 1;
-	}
-	return 0;
-}
-
-bool validation_for_password(const string& temp) {
-	bool special_char = false;
-	bool lower_letter = false;
-	bool upper_letter = false;
-	const int max_size = 5;
-	if (temp.size() < max_size) {
-		return 0;
-	}
-
-	int count = 0;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] == '!' || temp[i] == '@' || temp[i] == '#' || temp[i] == '$' || temp[i] == '%' || temp[i] == '^' || temp[i] == '&' || temp[i] == '*') {
-			special_char = true;
-			count++;
-		}
-	}
-
-	const int min_lower_letter = 97;
-	const int max_lower_letter = 122;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= min_lower_letter && temp[i] <= max_lower_letter) {
-			lower_letter = true;
-			count++;
-		}
-	}
-
-	const int min_upper_letter = 65;
-	const int max_upper_letter = 90;
-	for (int i = 0; i < temp.size(); i++) {
-		if (temp[i] >= min_upper_letter && temp[i] <= max_upper_letter) {
-			upper_letter = true;
-			count++;
-		}
-	}
-
-	for (int i = 0; i < temp.size(); i++) {
-		if (isdigit(temp[i])) {
-			count++;
-		}
-	}
-
-	if (special_char == true && lower_letter == true && upper_letter == true && count == temp.size()) {
-		return 1;
-	}
-	return 0;
-}
-
-void print_main_menu() {
-	cout << "Choose one of the following options:" << endl;
-	cout << "L - Login" << endl;
-	cout << "R - Register" << endl;
-	cout << "Q - Quit" << endl;
-	cout << "Your choice is: ";
-	return;
-}
-
-void print_second_menu(const double X) {
-	cout << "You have " << X << " BGN. Choose one of the following options:" << endl;
-	cout << "C - cancel account" << endl;
-	cout << "D - deposit" << endl;
-	cout << "L - logout" << endl;
-	cout << "T - transfer" << endl;
-	cout << "W - withdraw" << endl;
-	cout << "Your choice is: ";
-	return;
-}
-
-double my_round(const double temp) {
-	double result = (int)(temp * 100 + 0.5);
-	return (double)result / 100;
-}
-
 int main_menu(vector<user>& users, char letter) {
-	hash<string> my_hash;
+	while (letter != 'L' && letter != 'R' && letter != 'Q') {
+		cout << "There is no such option. Try again." << endl;
+		cin >> letter;
+	}
+
 	bool isLogin = false;
 	int user_number = -1;
 	string username;
@@ -172,13 +22,13 @@ int main_menu(vector<user>& users, char letter) {
 		cin >> username;
 		cout << "Please, insert password: ";
 		cin >> password;
-		password = my_hash(password);
+		password = hash_string(password);
 		for (int i = 0; i < users.size(); i++) {
 			if (username == users[i].username && password != users[i].hashed_password) {
 				while (password != users[i].hashed_password) {
 					cout << "Incorrect password. Try again." << endl;
 					cin >> password;
-					password = my_hash(password);
+					password = hash_string(password);
 				}
 				if (password == users[i].hashed_password) {
 					isLogin = true;
@@ -235,7 +85,7 @@ int main_menu(vector<user>& users, char letter) {
 			cout << "Your password and confirmation password don't match. Try again." << endl;
 			cin >> password1;
 		}
-		password = my_hash(password);
+		password = hash_string(password);
 
 		user new_user = { username, password, 0 };
 		users.push_back(new_user);
@@ -257,18 +107,21 @@ int main_menu(vector<user>& users, char letter) {
 }
 
 char second_menu(vector<user>& users, char letter, const int user_number) {
-	hash<string> my_hash;
-	
+	while (letter != 'C' && letter != 'D' && letter != 'L' && letter != 'T' && letter != 'W') { 
+		cout << "Тhere is no such option. Try again." << endl;
+		cin >> letter;
+	}
+
 	if (letter == 'C' && users[user_number].balance == 0) {
 		string password;
 		cout << "Please enter your password to confirm: ";
 		cin >> password;
-		password = my_hash(password);
+		password = hash_string(password);
 
 		while (password != users[user_number].hashed_password) {
 			cout << "The password is incorrect. Try again." << endl;
 			cin >> password;
-			password = my_hash(password);
+			password = hash_string(password);
 		}
 
 		remove("users.txt");
@@ -291,6 +144,7 @@ char second_menu(vector<user>& users, char letter, const int user_number) {
 		while (getline(myFile1, buffer)) {
 			inputs.push_back(buffer);
 		}
+		myFile1.close();
 
 		users.resize(inputs.size());
 		for (int i = 0; i < inputs.size(); i++) {
@@ -361,7 +215,7 @@ char second_menu(vector<user>& users, char letter, const int user_number) {
 	}
 }
 
-char second_function(vector<user>& users, int user_number, char second_letter) {
+char second_function(vector<user>& users, const int user_number, char second_letter) {
 	if (second_letter == 'L') {
 		return 'L';
 	}
