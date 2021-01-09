@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "MyFunctions.h"
 
 using namespace std;
@@ -167,6 +168,13 @@ string hash_string(string& password) {
 		}
 		else {
 			password[i] -= hashing_num;
+		}
+	}
+
+	//delete special char ':' because is part of data format
+	for (int i = 0; i < password.size(); i++) {
+		if (password[i] == ':') {
+			password[i] = ',';
 		}
 	}
 	return password;
