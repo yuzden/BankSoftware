@@ -1,3 +1,18 @@
+/**
+*
+* Solution to course project # 3
+* Introduction to programming course
+* Faculty of Mathematics and Informatics of Sofia University
+* Winter semester 2020/2021
+*
+* @author Yuzden Karadalieva
+* @idnumber 62566
+* @compiler VC
+*
+* <file with helper functions>
+*
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
